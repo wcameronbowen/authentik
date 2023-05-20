@@ -1,4 +1,5 @@
 import "@goauthentik/admin/users/GroupSelectModal";
+import { UserTypeEnum } from "@goauthentik/api/dist/models/UserTypeEnum";
 import { DEFAULT_CONFIG } from "@goauthentik/common/api/config";
 import { first } from "@goauthentik/common/utils";
 import "@goauthentik/elements/CodeMirror";
@@ -67,6 +68,30 @@ export class UserForm extends ModelForm<User, number> {
                 <p class="pf-c-form__helper-text">
                     ${t`User's primary identifier. 150 characters or fewer.`}
                 </p>
+            </ak-form-element-horizontal>
+            <ak-form-element-horizontal label=${t`User type`} ?required=${true} name="type">
+                <ak-radio
+                    .options=${[
+                        {
+                            label: "Default",
+                            value: UserTypeEnum.Default,
+                            default: true,
+                            description: html`${t`TODO Copy`}`,
+                        },
+                        {
+                            label: "External",
+                            value: UserTypeEnum.External,
+                            description: html`${t`TODO Copy`}`,
+                        },
+                        {
+                            label: "Service account",
+                            value: UserTypeEnum.ServiceAccount,
+                            description: html`${t`TODO Copy`}`,
+                        },
+                    ]}
+                    .value=${this.instance?.type}
+                >
+                </ak-radio>
             </ak-form-element-horizontal>
             <ak-form-element-horizontal label=${t`Name`} name="name">
                 <input

@@ -58,7 +58,6 @@ from authentik.core.middleware import (
     SESSION_KEY_IMPERSONATE_USER,
 )
 from authentik.core.models import (
-    USER_ATTRIBUTE_SA,
     USER_ATTRIBUTE_TOKEN_EXPIRING,
     USER_PATH_SERVICE_ACCOUNT,
     AuthenticatedSession,
@@ -66,6 +65,7 @@ from authentik.core.models import (
     Token,
     TokenIntents,
     User,
+    UserTypes,
 )
 from authentik.events.models import EventAction
 from authentik.flows.exceptions import FlowNonApplicableException
@@ -121,6 +121,17 @@ class UserSerializer(ModelSerializer):
                 raise ValidationError(_("No empty segments in user path allowed."))
         return path
 
+    def validate_type(self, user_type: str) -> str:
+        """Validate user type, internal_service_account is an internal value"""
+        if (
+            self.instance.type == UserTypes.INTERNAL_SERVICE_ACCOUNT
+            and user_type != UserTypes.INTERNAL_SERVICE_ACCOUNT
+        ):
+            raise ValidationError("Can't change internal service account to other user type.")
+        if user_type == UserTypes.INTERNAL_SERVICE_ACCOUNT.value:
+            raise ValidationError("Setting a user to internal service account is not allowed.")
+        return user_type
+
     class Meta:
         model = User
         fields = [
@@ -137,6 +148,7 @@ class UserSerializer(ModelSerializer):
             "attributes",
             "uid",
             "path",
+            "type",
         ]
         extra_kwargs = {
             "name": {"allow_blank": True},
@@ -185,6 +197,7 @@ class UserSelfSerializer(ModelSerializer):
             "avatar",
             "uid",
             "settings",
+            "type",
         ]
         extra_kwargs = {
             "is_active": {"read_only": True},
@@ -303,6 +316,7 @@ class UsersFilter(FilterSet):
             "attributes",
             "groups_by_name",
             "groups_by_pk",
+            "type",
         ]
 
 
@@ -395,7 +409,8 @@ class UserViewSet(UsedByMixin, ModelViewSet):
                 user: User = User.objects.create(
                     username=username,
                     name=username,
-                    attributes={USER_ATTRIBUTE_SA: True, USER_ATTRIBUTE_TOKEN_EXPIRING: expiring},
+                    type=UserTypes.SERVICE_ACCOUNT,
+                    attributes={USER_ATTRIBUTE_TOKEN_EXPIRING: expiring},
                     path=USER_PATH_SERVICE_ACCOUNT,
                 )
                 user.set_unusable_password()
