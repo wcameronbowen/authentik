@@ -16,7 +16,6 @@ import {
     App,
     EventMatcherPolicy,
     EventsApi,
-    ModelEnum,
     PoliciesApi,
     TypeCreate,
 } from "@goauthentik/api";
