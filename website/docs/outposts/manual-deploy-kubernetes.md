@@ -72,7 +72,7 @@ spec:
         app.kubernetes.io/version: 2021.12.3
     spec:
       containers:
-        - env:
+        env:
           - name: AUTHENTIK_HOST
             valueFrom:
               secretKeyRef:
